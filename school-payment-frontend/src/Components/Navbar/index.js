@@ -1,12 +1,13 @@
+// Navbar.js
 import './index.css'
 
 const Navbar = () => {
     return (
-        <Navbar>
+        <div className="navbar">
             <h1>History</h1>
             <button>Export</button>
-        </Navbar>
+        </div>
     )
 }
 
-export default Navbar
+export default Navbar;

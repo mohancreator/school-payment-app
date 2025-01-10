@@ -1,15 +1,17 @@
-
-import Navbar from "../Navbar"
+// Home.js
+import React from 'react';
+import Navbar from "../Navbar";
+import TransactionAndFiltering from '../TransactionsAndFiltering';
 
 const Home = () => {
     return (
         <div>
-            <Navbar/>
+            <Navbar />
             <div>
-                <h1>Transaction</h1>
+                <TransactionAndFiltering/>
             </div>
         </div>
     )
 }
 
-export default Home
+export default Home;
