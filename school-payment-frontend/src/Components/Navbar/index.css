@@ -1,0 +1,10 @@
+Navbar{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    margin: 15px;
+}
+
+Navbar h1 {
+    font-family: 'roboto', 'caveat';
+}
