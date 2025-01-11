@@ -44,32 +44,24 @@ mongoose.connection.on('connected', async () => {
 
 app.get('/transactions', async (req, res) => {
   try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
-    const skip = (page - 1) * limit;
-
-    const db = mongoose.connection.db;
-    const collectRequestStatus = db.collection('collect_request_status');
-
+    const db = mongoose.connection.db
+    const collectRequestStatus = db.collection('collect_request_status')
     const transactions = await collectRequestStatus.find({}, {
-      projection: {
-        collect_id: 1,
-        school_id: 1,
-        gateway: 1,
-        order_amount: 1,
-        transaction_amount: 1,
-        status: 1,
-        custom_order_id: 1,
-      },
-    }).skip(skip).limit(limit).toArray();
+      collect_id: 1,
+      school_id: 1,
+      gateway: 1,
+      order_amount: 1,
+      transaction_amount: 1,
+      status: 1,
+      custom_order_id: 1,
+    }).toArray();
 
-    res.status(200).json({ success: true, page, limit, transactions });
+    res.status(200).json({ success: true, transactions });
   } catch (err) {
-    console.error('Error fetching transactions:', err.message);
-    res.status(500).json({ success: false, message: 'Failed to fetch transactions. Please try again later.' });
+    console.error('Error fetching transactions:', err);
+    res.status(500).json({ success: false, message: err });
   }
 });
-
 
 
 app.get('/transactions/school/:school_id', async (req, res) => {
