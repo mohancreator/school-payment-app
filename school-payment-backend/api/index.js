@@ -42,6 +42,7 @@ mongoose.connection.on('connected', async () => {
   console.log('Collections:', collections.map((col) => col.name));
 });
 
+
 app.get('/transactions', async (req, res) => {
   try {
     const db = mongoose.connection.db
@@ -56,10 +57,10 @@ app.get('/transactions', async (req, res) => {
       custom_order_id: 1,
     }).toArray();
 
-    res.status(200).json({ success: true, transactions });
+    res.status(200).json({ success: true, data: transactions });
   } catch (err) {
     console.error('Error fetching transactions:', err);
-    res.status(500).json({ success: false, message: err });
+    res.status(500).json({ success: false, message: 'Internal Server Error' });
   }
 });
 
