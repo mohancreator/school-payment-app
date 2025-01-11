@@ -14,7 +14,6 @@ app.use(bodyParser.json());
 
 const uri = process.env.MONGODB_URI;
 
-// MongoDB Schema and Model
 const transactionSchema = new mongoose.Schema({
   collect_id: String,
   school_id: String,
@@ -27,7 +26,7 @@ const transactionSchema = new mongoose.Schema({
 
 const Transaction = mongoose.model('Transaction', transactionSchema);
 
-// Connect to MongoDB
+
 mongoose
   .connect(uri, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => {
@@ -37,37 +36,42 @@ mongoose
     console.error('Database connection error:', err);
   });
 
-// List all collections when connected to MongoDB
+
 mongoose.connection.on('connected', async () => {
   const collections = await mongoose.connection.db.listCollections().toArray();
   console.log('Collections:', collections.map((col) => col.name));
 });
 
-// API Endpoints
-
-// i) Fetch All Transactions
 app.get('/transactions', async (req, res) => {
   try {
-    const db = mongoose.connection.db
-    const collectRequestStatus = db.collection('collect_request_status')
-    const transactions = await collectRequestStatus.find({}, {
-      collect_id: 1,
-      school_id: 1,
-      gateway: 1,
-      order_amount: 1,
-      transaction_amount: 1,
-      status: 1,
-      custom_order_id: 1,
-    }).toArray();
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
 
-    res.status(200).json({ success: true, data: transactions });
+    const db = mongoose.connection.db;
+    const collectRequestStatus = db.collection('collect_request_status');
+
+    const transactions = await collectRequestStatus.find({}, {
+      projection: {
+        collect_id: 1,
+        school_id: 1,
+        gateway: 1,
+        order_amount: 1,
+        transaction_amount: 1,
+        status: 1,
+        custom_order_id: 1,
+      },
+    }).skip(skip).limit(limit).toArray();
+
+    res.status(200).json({ success: true, page, limit, transactions });
   } catch (err) {
-    console.error('Error fetching transactions:', err);
-    res.status(500).json({ success: false, message: 'Internal Server Error' });
+    console.error('Error fetching transactions:', err.message);
+    res.status(500).json({ success: false, message: 'Failed to fetch transactions. Please try again later.' });
   }
 });
 
-// ii) Fetch Transactions by School
+
+
 app.get('/transactions/school/:school_id', async (req, res) => {
   try {
     const school_id = req.params.school_id;
@@ -81,7 +85,7 @@ app.get('/transactions/school/:school_id', async (req, res) => {
   }
 });
 
-// iii) Transaction Status Check
+
 app.get('/transactions/status/:custom_order_id', async (req, res) => {
   try {
     const { custom_order_id } = req.params;
@@ -98,7 +102,7 @@ app.get('/transactions/status/:custom_order_id', async (req, res) => {
   }
 });
 
-// iv) Webhook for Status Updates
+
 app.post('/transactions/webhook', async (req, res) => {
   try {
     const { status, order_info } = req.body;
@@ -117,7 +121,7 @@ app.post('/transactions/webhook', async (req, res) => {
   }
 });
 
-// v) Manual Status Update
+
 app.post('/transactions/manual-update', async (req, res) => {
   try {
     const { custom_order_id, status } = req.body;
@@ -138,7 +142,7 @@ app.post('/transactions/manual-update', async (req, res) => {
   }
 });
 
-// Server initiation
+
 const PORT = process.env.PORT || 3008;
 app.listen(PORT, () => {
   console.log(`Server running successfully on http://localhost:${PORT}`);

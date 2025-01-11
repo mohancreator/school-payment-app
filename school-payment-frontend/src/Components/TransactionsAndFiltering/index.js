@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';  // Corrected Axios import
+import axios from 'axios';
 import './index.css';
 
 const TransactionAndFiltering = () => {
   const [transactions, setTransactions] = useState([]);
-
+  
   useEffect(() => {
     const fetchTransactions = async () => {
       try {
         const response = await axios.get('http://localhost:3008/transactions');
-        setTransactions(response.data.data); 
+        setTransactions(response.data.data);
       } catch (error) {
         console.error('Error fetching transactions:', error);
       }
