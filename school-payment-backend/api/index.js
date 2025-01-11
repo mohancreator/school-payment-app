@@ -3,17 +3,21 @@ const dotenv = require('dotenv');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const bodyParser = require('body-parser');
+const fs = require('fs');
+const csv = require('csv-parser');
 
 dotenv.config();
 
 const app = express();
 
-
+// Middleware
 app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
 app.use(bodyParser.json());
 
+// MongoDB URI from .env file
 const uri = process.env.MONGODB_URI;
 
+// Mongoose schema and model
 const transactionSchema = new mongoose.Schema({
   collect_id: String,
   school_id: String,
@@ -26,7 +30,7 @@ const transactionSchema = new mongoose.Schema({
 
 const Transaction = mongoose.model('Transaction', transactionSchema);
 
-
+// Connect to MongoDB
 mongoose
   .connect(uri, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => {
@@ -36,27 +40,40 @@ mongoose
     console.error('Database connection error:', err);
   });
 
+// Endpoint to import CSV file
+app.post('/import-csv', async (req, res) => {
+  try {
+    const filePath = '../test.collect_request_status.csv'; // Replace with your CSV file path
+    const transactions = [];
 
-mongoose.connection.on('connected', async () => {
-  const collections = await mongoose.connection.db.listCollections().toArray();
-  console.log('Collections:', collections.map((col) => col.name));
+    fs.createReadStream(filePath)
+      .pipe(csv())
+      .on('data', (row) => {
+        transactions.push(row);
+      })
+      .on('end', async () => {
+        try {
+          await Transaction.insertMany(transactions);
+          res.status(200).json({ success: true, message: 'CSV data imported successfully!' });
+        } catch (err) {
+          console.error('Error inserting data into MongoDB:', err);
+          res.status(500).json({ success: false, message: 'Error importing data into MongoDB' });
+        }
+      })
+      .on('error', (err) => {
+        console.error('Error reading CSV file:', err);
+        res.status(500).json({ success: false, message: 'Error reading CSV file' });
+      });
+  } catch (err) {
+    console.error('Error importing CSV data:', err);
+    res.status(500).json({ success: false, message: 'Internal Server Error' });
+  }
 });
 
-
+// Other endpoints
 app.get('/transactions', async (req, res) => {
   try {
-    const db = mongoose.connection.db
-    const collectRequestStatus = db.collection('collect_request_status')
-    const transactions = await collectRequestStatus.find({}, {
-      collect_id: 1,
-      school_id: 1,
-      gateway: 1,
-      order_amount: 1,
-      transaction_amount: 1,
-      status: 1,
-      custom_order_id: 1,
-    }).toArray();
-
+    const transactions = await Transaction.find({});
     res.status(200).json({ success: true, data: transactions });
   } catch (err) {
     console.error('Error fetching transactions:', err);
@@ -64,13 +81,10 @@ app.get('/transactions', async (req, res) => {
   }
 });
 
-
 app.get('/transactions/school/:school_id', async (req, res) => {
   try {
-    const school_id = req.params.school_id;
-    const db = mongoose.connection.db
-    const collectRequest = db.collection('collect_request')
-    const transactions = await collectRequest.find({ school_id:school_id }).toArray();
+    const { school_id } = req.params;
+    const transactions = await Transaction.find({ school_id });
     res.status(200).json({ success: true, data: transactions });
   } catch (err) {
     console.error('Error fetching transactions by school:', err);
@@ -78,13 +92,10 @@ app.get('/transactions/school/:school_id', async (req, res) => {
   }
 });
 
-
 app.get('/transactions/status/:custom_order_id', async (req, res) => {
   try {
     const { custom_order_id } = req.params;
-    const db = mongoose.connection.db
-    const collectRequest = db.collection('collect_request')
-    const transaction = await collectRequest.findOne({ custom_order_id }, { status: 1 });
+    const transaction = await Transaction.findOne({ custom_order_id });
     if (!transaction) {
       return res.status(404).json({ success: false, message: 'Transaction not found' });
     }
@@ -94,7 +105,6 @@ app.get('/transactions/status/:custom_order_id', async (req, res) => {
     res.status(500).json({ success: false, message: 'Internal Server Error' });
   }
 });
-
 
 app.post('/transactions/webhook', async (req, res) => {
   try {
@@ -113,7 +123,6 @@ app.post('/transactions/webhook', async (req, res) => {
     res.status(500).json({ success: false, message: 'Internal Server Error' });
   }
 });
-
 
 app.post('/transactions/manual-update', async (req, res) => {
   try {
@@ -135,7 +144,7 @@ app.post('/transactions/manual-update', async (req, res) => {
   }
 });
 
-
+// Start the server
 const PORT = process.env.PORT || 3008;
 app.listen(PORT, () => {
   console.log(`Server running successfully on http://localhost:${PORT}`);
