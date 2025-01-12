@@ -47,7 +47,7 @@ app.get('/transactions', async (req, res) => {
   try {
     const db = mongoose.connection.db
     const collectRequestStatus = db.collection('collect_request_status')
-    const transactions = await collectRequestStatus.find({}).toArray();
+    const transactions = await collectRequestStatus.find();
 
     res.status(200).json({ success: true, data: transactions });
   } catch (err) {
