@@ -45,7 +45,7 @@ mongoose.connection.on('connected', async () => {
 
 app.get('/transactions', async (req, res) => {
   try {
-    const db = mongoose.connection.db;
+    const db = await mongoose.connection.db;
     const collectRequestStatus = db.collection('collect_request_status');
 
     // Fetch transactions from the collection
