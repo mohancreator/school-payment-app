@@ -10,7 +10,7 @@ const app = express();
 
 
 app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
-app.use(bodyParser.json());
+app.use(express.json());
 
 const uri = process.env.MONGODB_URI;
 
