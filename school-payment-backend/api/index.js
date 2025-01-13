@@ -74,75 +74,77 @@ mongoose.connection.once('open', () => {
   });
 
 
-app.get('/transactions/school/:school_id', async (req, res) => {
-  try {
-    const school_id = req.params.school_id;
-    const db = mongoose.connection.db
-    const collectRequest = db.collection('collect_request')
-    const transactions = await collectRequest.find({ school_id:school_id }).toArray();
-    res.status(200).json({ success: true, data: transactions });
-  } catch (err) {
-    console.error('Error fetching transactions by school:', err);
-    res.status(500).json({ success: false, message: 'Internal Server Error' });
-  }
-});
-
-
-app.get('/transactions/status/:custom_order_id', async (req, res) => {
-  try {
-    const { custom_order_id } = req.params;
-    const db = mongoose.connection.db
-    const collectRequest = db.collection('collect_request')
-    const transaction = await collectRequest.findOne({ custom_order_id }, { status: 1 });
-    if (!transaction) {
-      return res.status(404).json({ success: false, message: 'Transaction not found' });
+  app.get('/transactions/school/:school_id', async (req, res) => {
+    try {
+      const { school_id } = req.params;
+      const transactions = await Transaction.find({ school_id });
+  
+      if (!transactions || transactions.length === 0) {
+        return res.status(404).json({ success: false, message: 'No transactions found for the specified school' });
+      }
+  
+      res.status(200).json({ success: true, data: transactions });
+    } catch (err) {
+      console.error('Error fetching transactions by school:', err.message || err);
+      res.status(500).json({ success: false, message: 'Internal Server Error' });
     }
-    res.status(200).json({ success: true, data: transaction });
-  } catch (err) {
-    console.error('Error checking transaction status:', err);
-    res.status(500).json({ success: false, message: 'Internal Server Error' });
-  }
-});
-
-
-app.post('/transactions/webhook', async (req, res) => {
-  try {
-    const { status, order_info } = req.body;
-    const { order_id, gateway, order_amount, transaction_amount, bank_reference } = order_info;
-
-    const updatedTransaction = await Transaction.findOneAndUpdate(
-      { collect_id: order_id },
-      { status, gateway, order_amount, transaction_amount, bank_reference },
-      { new: true, upsert: true }
-    );
-
-    res.status(200).json({ success: true, message: 'Transaction updated successfully', data: updatedTransaction });
-  } catch (err) {
-    console.error('Error updating transaction via webhook:', err);
-    res.status(500).json({ success: false, message: 'Internal Server Error' });
-  }
-});
-
-
-app.post('/transactions/manual-update', async (req, res) => {
-  try {
-    const { custom_order_id, status } = req.body;
-    const updatedTransaction = await Transaction.findOneAndUpdate(
-      { custom_order_id },
-      { status },
-      { new: true }
-    );
-
-    if (!updatedTransaction) {
-      return res.status(404).json({ success: false, message: 'Transaction not found' });
+  });
+  
+  app.get('/transactions/status/:custom_order_id', async (req, res) => {
+    try {
+      const { custom_order_id } = req.params;
+      const transaction = await Transaction.findOne({ custom_order_id }, 'status');
+  
+      if (!transaction) {
+        return res.status(404).json({ success: false, message: 'Transaction not found' });
+      }
+  
+      res.status(200).json({ success: true, data: transaction });
+    } catch (err) {
+      console.error('Error checking transaction status:', err.message || err);
+      res.status(500).json({ success: false, message: 'Internal Server Error' });
     }
-
-    res.status(200).json({ success: true, message: 'Transaction status updated successfully', data: updatedTransaction });
-  } catch (err) {
-    console.error('Error manually updating transaction status:', err);
-    res.status(500).json({ success: false, message: 'Internal Server Error' });
-  }
-});
+  });
+  
+  app.post('/transactions/webhook', async (req, res) => {
+    try {
+      const { status, order_info } = req.body;
+      const { order_id, gateway, order_amount, transaction_amount, bank_reference } = order_info;
+  
+      const updatedTransaction = await Transaction.findOneAndUpdate(
+        { collect_id: order_id },
+        { status, gateway, order_amount, transaction_amount, bank_reference },
+        { new: true, upsert: true }
+      );
+  
+      res.status(200).json({ success: true, message: 'Transaction updated successfully', data: updatedTransaction });
+    } catch (err) {
+      console.error('Error updating transaction via webhook:', err.message || err);
+      res.status(500).json({ success: false, message: 'Internal Server Error' });
+    }
+  });
+  
+  app.post('/transactions/manual-update', async (req, res) => {
+    try {
+      const { custom_order_id, status } = req.body;
+  
+      const updatedTransaction = await Transaction.findOneAndUpdate(
+        { custom_order_id },
+        { status },
+        { new: true }
+      );
+  
+      if (!updatedTransaction) {
+        return res.status(404).json({ success: false, message: 'Transaction not found' });
+      }
+  
+      res.status(200).json({ success: true, message: 'Transaction status updated successfully', data: updatedTransaction });
+    } catch (err) {
+      console.error('Error manually updating transaction status:', err.message || err);
+      res.status(500).json({ success: false, message: 'Internal Server Error' });
+    }
+  });
+  
 
 // Server initiation
 const PORT = process.env.PORT || 3008;
