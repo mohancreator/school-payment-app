@@ -1,31 +1,132 @@
-/* index.css */
+/* Container for the entire transaction component */
 .transaction-container {
-    padding: 20px;
-    font-family: Arial, sans-serif;
-  }
-  
-  .transaction-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-  }
-  
-  .transaction-table th,
-  .transaction-table td {
-    padding: 12px;
-    text-align: left;
-    border: 1px solid #ddd;
-  }
-  
-  .transaction-table th {
-    background-color: #f4f4f4;
-  }
-  
-  .transaction-table tr:nth-child(even) {
-    background-color: #f9f9f9;
-  }
-  
-  .transaction-table tr:hover {
-    background-color: #f1f1f1;
-  }
-  
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #f4f4f9;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.rows-container{
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 80vw;
+}
+
+h1 {
+  text-align: center;
+  font-size: 2em;
+  margin-bottom: 20px;
+}
+
+/* Input section styles */
+.input-container {
+  display: flex;
+  align-items: center;
+  margin: 10px 0;
+}
+
+input {
+  margin-left: 10px;
+  padding: 8px;
+  font-size: 1em;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+}
+
+button {
+  padding: 8px 16px;
+  font-size: 1em;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-left: 10px;
+}
+
+button:hover {
+  background-color: #45a049;
+}
+
+/* Table styles */
+.transaction-table {
+  width: 100%;
+  margin-top: 20px;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.transaction-table th,
+.transaction-table td {
+  padding: 12px 15px;
+  text-align: left;
+  border: 1px solid #ddd;
+  word-wrap: break-word;
+}
+
+.transaction-table th {
+  background-color: #f4f4f9;
+  font-weight: bold;
+}
+
+.transaction-table td {
+  background-color: white;
+}
+
+/* Adding color to transaction status */
+.status-pending {
+  color: red;
+  font-weight: bold;
+}
+
+.status-success {
+  color: green;
+  font-weight: bold;
+}
+
+.status-failed {
+  color: darkorange;
+  font-weight: bold;
+}
+
+/* Loader and error styles */
+.rows-container, .error-container, .no-transactions-container {
+  text-align: center;
+}
+
+.error-container p {
+  color: red;
+}
+
+.no-transactions-container p {
+  font-size: 1.2em;
+  color: #555;
+}
+
+.status-container {
+  margin-top: 20px;
+  padding: 10px;
+  background-color: #e0f7fa;
+  border-radius: 4px;
+}
+
+.limit-container {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.limit-container input {
+  width: 60px;
+  margin-left: 10px;
+}
+
+/* Spinner for loading */
+.TailSpin {
+  margin: 20px auto;
+}
