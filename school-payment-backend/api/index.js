@@ -9,7 +9,7 @@ dotenv.config();
 const app = express();
 
 
-app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
+app.use(cors({ origin: 'https://school-payment-app.netlify.app', credentials: true }));
 app.use(express.json());
 
 const uri = process.env.MONGODB_URI;
