@@ -42,7 +42,7 @@ mongoose.connection.on('connected', async () => {
   console.log('Collections:', collections.map((col) => col.name));
 });
 
-
+mongoose.connection.once('open', () => {
 app.get('/transactions', async (req, res) => {
   try {
     const db = mongoose.connection.db;
@@ -146,3 +146,4 @@ const PORT = process.env.PORT || 3008;
 app.listen(PORT, () => {
   console.log(`Server running successfully on http://localhost:${PORT}`);
 });
+})
