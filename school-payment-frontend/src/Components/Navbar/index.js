@@ -33,10 +33,13 @@ const Navbar = () => {
     return [headers, ...rows].join('\n'); 
   };
 
+
   return (
     <div className="navbar">
       <h1>History</h1>
-      <button onClick={handleExport}>Export</button>
+      <div>
+        <button onClick={handleExport}>Export</button>
+      </div>
     </div>
   );
 };
