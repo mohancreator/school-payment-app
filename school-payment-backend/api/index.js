@@ -45,36 +45,29 @@ mongoose.connection.on('connected', async () => {
 
 app.get('/transactions', async (req, res) => {
   try {
-    const db = await mongoose.connection.db;
-    const collectRequestStatus = db.collection('collect_request_status');
+    const db = mongoose.connection.db;
+    if (!db) {
+      throw new Error('Database connection is not established');
+    }
 
-    // Fetch transactions from the collection
+    const collectRequestStatus = db.collection('collect_request_status');
     const transactions = await collectRequestStatus.find({}).toArray();
 
-    // Log the fetched transactions for debugging
-    console.log('Fetched transactions:', transactions);
-
-    // Check if the transactions are empty or null and handle appropriately
     if (!transactions || transactions.length === 0) {
-      console.warn('No transactions found');
       return res.status(404).json({ success: false, message: 'No transactions found' });
     }
 
-    // Return the transactions as JSON
     res.status(200).json({ success: true, data: transactions });
-
   } catch (err) {
-    // Log the error with more details for debugging
     console.error('Error fetching transactions:', err.message || err);
-
-    // Return a more descriptive error response
     res.status(500).json({
       success: false,
       message: 'Internal Server Error',
-      error: err.message || err
+      error: err.message || err,
     });
   }
 });
+
 
 
 

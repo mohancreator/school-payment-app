@@ -8,7 +8,7 @@ const TransactionAndFiltering = () => {
   useEffect(() => {
     const fetchTransactions = async () => {
       try {
-        const response = await axios.get('http://localhost:3008/transactions');
+        const response = await axios.get('https://school-payment-app.vercel.app/transactions');
         setTransactions(response.data.data);
       } catch (error) {
         console.error('Error fetching transactions:', error);
