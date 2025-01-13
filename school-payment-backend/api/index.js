@@ -43,32 +43,35 @@ mongoose.connection.on('connected', async () => {
 });
 
 mongoose.connection.once('open', () => {
-app.get('/transactions', async (req, res) => {
-  try {
-    const db = mongoose.connection.db;
-    if (!db) {
-      throw new Error('Database connection is not established');
+  app.get('/transactions', async (req, res) => {
+    try {
+      const db = mongoose.connection.db;
+      if (!db) {
+        throw new Error('Database connection is not established');
+      }
+  
+      const collectRequestStatus = db.collection('collect_request_status');
+      
+      // Get the limit query parameter or default to 10
+      const limit = parseInt(req.query.limit, 10) || 10;
+  
+      // Fetch transactions with the specified limit
+      const transactions = await collectRequestStatus.find({}).limit(limit).toArray();
+  
+      if (!transactions || transactions.length === 0) {
+        return res.status(404).json({ success: false, message: 'No transactions found' });
+      }
+  
+      res.status(200).json({ success: true, data: transactions });
+    } catch (err) {
+      console.error('Error fetching transactions:', err.message || err);
+      res.status(500).json({
+        success: false,
+        message: 'Internal Server Error',
+        error: err.message || err,
+      });
     }
-
-    const collectRequestStatus = db.collection('collect_request_status');
-    const transactions = await collectRequestStatus.find({}).toArray();
-
-    if (!transactions || transactions.length === 0) {
-      return res.status(404).json({ success: false, message: 'No transactions found' });
-    }
-
-    res.status(200).json({ success: true, data: transactions });
-  } catch (err) {
-    console.error('Error fetching transactions:', err.message || err);
-    res.status(500).json({
-      success: false,
-      message: 'Internal Server Error',
-      error: err.message || err,
-    });
-  }
-});
-
-
+  });
 
 
 app.get('/transactions/school/:school_id', async (req, res) => {
